@@ -19,7 +19,7 @@ type Page struct {
 }
 
 func main() {
-	xmlFile, err := os.Open("~/Downloads/frwiki-debut.xml")
+	xmlFile, err := os.Open("frwiki-debut.xml")
 
 	if err != nil {
 		fmt.Println(err)
