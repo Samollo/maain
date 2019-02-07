@@ -3,23 +3,22 @@ package main
 import (
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 )
 
-type Mediawiki struct {
-	XMLName xml.Name `xml:"mediawiki"`
-	Pages   []Page   `xml:"page"`
+type XMLContent struct {
+	Pages []Page `xml:"page"`
 }
 
 type Page struct {
-	XMLName xml.Name `xml:"page"`
-	Title   string   `xml:"title"`
-	Text    string   `xml:"text"`
+	Title string `xml:"title"`
+	Text  string `xml:"text"`
 }
 
 func main() {
-	xmlFile, err := os.Open("frwiki-debut.xml")
+	/*
+	xmlFile, err := os.Open("/Users/mohammed/Downloads/frwiki-20190120-pages-articles.xml")
 
 	if err != nil {
 		fmt.Println(err)
@@ -30,12 +29,84 @@ func main() {
 
 	byteValue, _ := ioutil.ReadAll(xmlFile)
 
-	var mediawiki Mediawiki
-	xml.Unmarshal(byteValue, &mediawiki)
+	var content XMLContent
+	xml.Unmarshal(byteValue, &content)
 
-	for i := 0; i < len(mediawiki.Pages); i++ {
-		fmt.Println("Title:", mediawiki.Pages[i].Title)
-		fmt.Println("Text:", mediawiki.Pages[i].Text)
+	for i := 0; i < len(content.Pages); i++ {
+		fmt.Println("Title:", content.Pages[i].Title)
+		fmt.Println("Text:", content.Pages[i].Text)
+	}*/
+
+	ParseXMLFile(os.Args[1], "")
+
+}
+
+func ParseXMLFile(filePath string, outputPath string) error {
+	xmlFile, err := os.Open(filePath)
+	if err != nil {
+		return err
+	}
+	isOnPage := false
+	isOnTitle := false
+	isOnContent := false
+
+	forloopTime := 1
+
+	decoder := xml.NewDecoder(xmlFile)
+	for {
+		i := 0
+
+		t, err := decoder.Token()
+
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			fmt.Printf("decoder.Token() failed with '%s'\n", err)
+			break
+		}
+
+		switch v := t.(type) {
+
+		case xml.StartElement:
+			if v.Name.Local == "page" {
+				isOnPage = true
+			}
+			if v.Name.Local == "title" {
+				isOnTitle = true
+			}
+			if v.Name.Local == "text" {
+				isOnContent = true
+			}
+
+		case xml.EndElement:
+			if v.Name.Local == "page" {
+				isOnPage = false
+				i++
+			}
+			if v.Name.Local == "title" {
+				isOnTitle = false
+			}
+			if v.Name.Local == "text" {
+				isOnContent = false
+			}
+
+		case xml.CharData:
+			if isOnPage {
+				if isOnTitle {
+					fmt.Println("Titre : " + string(v))
+				}
+				if isOnContent {
+					fmt.Println("Contenu : " + string(v))
+				}
+			}
+		}
+
+		if i >= forloopTime {
+			break
+		}
 	}
 
+	return nil
 }
