@@ -1,7 +1,8 @@
 package crawler
 
-import "fmt"
+type Crawler struct {
+}
 
-func test() {
-	fmt.Println("Just a test")
+func NewCrawler(path string) *Crawler {
+	return nil
 }
