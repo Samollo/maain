@@ -5,40 +5,14 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
-type Parser struct {
-}
-
-type Document struct {
-	filename string
-	Media    Mediawiki
-}
-
-type Mediawiki struct {
-	XMLName  xml.Name `xml:"mediawiki"`
-	Siteinfo Siteinfo `xml:"siteinfo"`
-	Pages    []Page   `xml:"page"`
-}
-
-type Siteinfo struct {
-	XMLName  xml.Name `xml:"siteinfo"`
-	Sitename string   `xml:"sitename"`
-	Base     string   `xml:"base"`
-}
-type Page struct {
-	XMLName  xml.Name `xml:"page"`
-	Title    string   `xml:"title"`
-	Revision Revision `xml:"revision"`
-}
-
-type Revision struct {
-	XMLName xml.Name `xml:"revision"`
-	Text    string   `xml:"text"`
-	ID      string   `xml:"id"`
-}
+var categories = [7]string{"ingenierie", "voiture", "pilot", "moteur", "auto", "mobile", "constructeur"}
 
 func ParseXMLFile(input string, output string) error {
+	pageProcessed := 0
+	total := 0
 	xmlFile, err := os.Open(input)
 	if err != nil {
 		return err
@@ -47,10 +21,6 @@ func ParseXMLFile(input string, output string) error {
 	if err != nil {
 		return err
 	}
-
-	isOnPage := false
-	isOnTitle := false
-	isOnContent := false
 
 	decoder := xml.NewDecoder(xmlFile)
 	for {
