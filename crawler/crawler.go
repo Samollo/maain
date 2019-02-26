@@ -44,3 +44,15 @@ func (c *Crawler) fillDictionary() error {
 	}
 	return nil
 }
+
+func extractPage(decoder *xml.Decoder) (string, string, error) {
+	title, err := parseutils.Extract("title", decoder)
+	if err != nil {
+		return "", "", err
+	}
+	text, err := parseutils.Extract("text", decoder)
+	if err != nil {
+		return "", "", err
+	}
+	return title, text, nil
+}
