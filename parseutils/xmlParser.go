@@ -8,24 +8,25 @@ import (
 	"strings"
 )
 
-var categories = [7]string{"ingenierie", "voiture", "pilot", "moteur", "auto", "mobile", "constructeur"}
-
-func ParseXMLFile(input string, output string) error {
+func GenerateDataset(input string, output string, pagesToExtract int, categories []string) error {
 	pageProcessed := 0
 	total := 0
 	xmlFile, err := os.Open(input)
 	if err != nil {
-		return err
+		return fmt.Errorf("an error occured. os.Open(%v) in GenerateDaset(): %v", input, err)
 	}
 	outputFile, err := os.Create(output)
 	if err != nil {
-		return err
+		return fmt.Errorf("an error occured. os.Create(%v) failed in GenerateDaset(): %v", output, err)
 	}
 
 	decoder := xml.NewDecoder(xmlFile)
 	for {
-		t, err := decoder.Token()
+		if pageProcessed == pagesToExtract {
+			break
+		}
 
+		t, err := decoder.Token()
 		if err == io.EOF {
 			break
 		}
@@ -38,22 +39,25 @@ func ParseXMLFile(input string, output string) error {
 		case xml.StartElement:
 			if v.Name.Local == "page" {
 				total++
-				title := extract("title", decoder)
-				content := extract("text", decoder)
-				if contains(content) {
+				title, _ := Extract("title", decoder)
+				content, _ := Extract("text", decoder)
+				if contains(content, categories) {
+					outputFile.WriteString("<title>")
 					outputFile.WriteString(title)
+					outputFile.WriteString("</title>\n")
+					outputFile.WriteString("<text>")
 					outputFile.WriteString(content)
+					outputFile.WriteString("</text>\n")
 					pageProcessed++
 				}
 			}
 		}
 	}
-
-	fmt.Printf("Nombre de pages extraites: %v sur un total de %v\n", pageProcessed, total)
+	fmt.Printf("%v pages extracted on a total of %v\n", pageProcessed, total)
 	return nil
 }
 
-func contains(text string) bool {
+func contains(text string, categories []string) bool {
 	for _, v := range categories {
 		if strings.Contains(text, v) {
 			return true
@@ -62,7 +66,7 @@ func contains(text string) bool {
 	return false
 }
 
-func extract(tag string, decoder *xml.Decoder) string {
+func Extract(tag string, decoder *xml.Decoder) (string, error) {
 	isOn := false
 	result := ""
 
@@ -70,7 +74,7 @@ func extract(tag string, decoder *xml.Decoder) string {
 		t, err := decoder.Token()
 		if err != nil {
 			fmt.Printf("decoder.Token() failed with '%s'\n", err)
-			break
+			return "", err
 		}
 
 		switch v := t.(type) {
@@ -81,7 +85,7 @@ func extract(tag string, decoder *xml.Decoder) string {
 		case xml.EndElement:
 			if v.Name.Local == tag {
 				isOn = false
-				return result
+				return result, nil
 			}
 		case xml.CharData:
 			if isOn {
@@ -89,5 +93,5 @@ func extract(tag string, decoder *xml.Decoder) string {
 			}
 		}
 	}
-	return result
+	return result, nil
 }
