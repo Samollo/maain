@@ -73,8 +73,7 @@ func Extract(tag string, decoder *xml.Decoder) (string, error) {
 	for {
 		t, err := decoder.Token()
 		if err != nil {
-			fmt.Printf("decoder.Token() failed with '%s'\n", err)
-			return "", err
+			return "", fmt.Errorf("error occured in Extract: %v", err)
 		}
 
 		switch v := t.(type) {

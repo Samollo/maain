@@ -53,11 +53,11 @@ func (c *Crawler) dataset() error {
 func (c *Crawler) fillDictionary() error {
 	file, err := os.Open(output)
 	if err != nil {
-		return err
+		return fmt.Errorf("error occured in fillDictionary: %v", err)
 	}
 	decoder := xml.NewDecoder(file)
 	for {
-		_, _, err := extractPage(decoder)
+		title, text, err := extractPage(decoder)
 		if err == io.EOF {
 			break
 		}
@@ -72,11 +72,11 @@ func (c *Crawler) fillDictionary() error {
 func extractPage(decoder *xml.Decoder) (string, string, error) {
 	title, err := parseutils.Extract("title", decoder)
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("error occured in extractPage: %v", err)
 	}
 	text, err := parseutils.Extract("text", decoder)
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("error occured in extractPage: %v", err)
 	}
 	return title, text, nil
 }
