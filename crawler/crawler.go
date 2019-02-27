@@ -55,6 +55,9 @@ func (c *Crawler) fillDictionary() error {
 	if err != nil {
 		return fmt.Errorf("error occured in fillDictionary: %v", err)
 	}
+
+	wordIndex := make(map[string]int)
+	wordFreq := make([]*Word, 0)
 	decoder := xml.NewDecoder(file)
 	for {
 		title, text, err := extractPage(decoder)
@@ -62,13 +65,39 @@ func (c *Crawler) fillDictionary() error {
 			break
 		}
 		if err != nil {
-			return err
+			return fmt.Errorf("error occured in fillDictionary: %v", err)
 		}
 
+		corpus := doCorpus(title, text)
+		//Iterate through corpus and generate list of Word with their freq
+		for _, word := range corpus {
+			if val, ok := wordIndex[word]; ok {
+				wordFreq[val].freq++
+			} else {
+				wordFreq = append(wordFreq, &Word{value: word, freq: 1})
+				wordIndex[word] = len(wordFreq) - 1
+			}
+		}
+	}
+
+	//Sorted from biggest freq to lowest
+	sort.SliceStable(wordFreq, func(i, j int) bool { return wordFreq[i].freq > wordFreq[j].freq })
+	//add to dico
+	for i := 0; i < wordsToKeep; i++ {
+		c.wordDictionary[wordFreq[i].value] = wordFreq[i].freq
 	}
 	return nil
 }
 
+//doCorpus returns a string slice containing words of title and text of an extracted page
+func doCorpus(title, text string) []string {
+	corpus := strings.Split(title, " ")
+	tmp := strings.Replace(text, "\n", " ", -1)
+	return append(corpus, strings.Split(tmp, " ")...)
+}
+
+//extractPage returns the title of the page and its content.
+//Throw an error if it fails to read the token
 func extractPage(decoder *xml.Decoder) (string, string, error) {
 	title, err := parseutils.Extract("title", decoder)
 	if err != nil {
