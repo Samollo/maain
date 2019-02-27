@@ -19,7 +19,7 @@ var categories = []string{"ingenierie", "voiture", "pilot", "moteur", "auto", "m
 
 type Crawler struct {
 	inputPath      string
-	wordDictionary map[string]int
+	wordDictionary []string
 }
 
 type Word struct {
@@ -30,7 +30,7 @@ type Word struct {
 //NewCrawler is a constructor for a basic Crawler struct with a path to the xml file to be processed
 //and a wordDictionary containing the n most frequent words
 func NewCrawler(path string) *Crawler {
-	return &Crawler{inputPath: path, wordDictionary: make(map[string]int)}
+	return &Crawler{inputPath: path, wordDictionary: make([]string, 0)}
 }
 
 func (c *Crawler) Prepare() error {
@@ -82,9 +82,11 @@ func (c *Crawler) fillDictionary() error {
 
 	//Sorted from biggest freq to lowest
 	sort.SliceStable(wordFreq, func(i, j int) bool { return wordFreq[i].freq > wordFreq[j].freq })
+	wordFreq = wordFreq[:wordsToKeep]
+	sort.SliceStable(wordFreq, func(i, j int) bool { return wordFreq[i].value < wordFreq[j].value })
 	//add to dico
-	for i := 0; i < wordsToKeep; i++ {
-		c.wordDictionary[wordFreq[i].value] = wordFreq[i].freq
+	for i := 0; i < len(wordFreq); i++ {
+		c.wordDictionary = append(c.wordDictionary, wordFreq[i].value)
 	}
 	return nil
 }
