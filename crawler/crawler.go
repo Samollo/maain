@@ -7,8 +7,13 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"unicode"
 
 	"github.com/Samollo/maain/parseutils"
+
+	"golang.org/x/text/runes"
+	"golang.org/x/text/transform"
+	"golang.org/x/text/unicode/norm"
 )
 
 const pagesToExtract = 200000
@@ -82,13 +87,29 @@ func (c *Crawler) fillDictionary() error {
 
 	//Sorted from biggest freq to lowest
 	sort.SliceStable(wordFreq, func(i, j int) bool { return wordFreq[i].freq > wordFreq[j].freq })
+	//keep only 10k words
 	wordFreq = wordFreq[:wordsToKeep]
 	sort.SliceStable(wordFreq, func(i, j int) bool { return wordFreq[i].value < wordFreq[j].value })
-	//add to dico
+	//add to dico and
+	//remove accents and upper-cases
 	for i := 0; i < len(wordFreq); i++ {
-		c.wordDictionary = append(c.wordDictionary, wordFreq[i].value)
+		c.wordDictionary = append(c.wordDictionary, formatWord(wordFreq[i].value))
 	}
 	return nil
+}
+
+func removeAccents(s string) (string, error) {
+	t := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
+	output, _, err := transform.String(t, s)
+	if err != nil {
+		return "", err
+	}
+	return output, nil
+}
+
+func formatWord(word string) string {
+	word, _ = removeAccents(strings.ToLower(word))
+	return word
 }
 
 //doCorpus returns a string slice containing words of title and text of an extracted page
