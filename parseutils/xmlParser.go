@@ -1,6 +1,7 @@
 package parseutils
 
 import (
+	"bytes"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -68,7 +69,8 @@ func contains(text string, categories []string) bool {
 
 func Extract(tag string, decoder *xml.Decoder) (string, error) {
 	isOn := false
-	result := ""
+	result := make([]byte, 0)
+	buf := bytes.NewBuffer(result)
 
 	for {
 		t, err := decoder.Token()
@@ -84,13 +86,13 @@ func Extract(tag string, decoder *xml.Decoder) (string, error) {
 		case xml.EndElement:
 			if v.Name.Local == tag {
 				isOn = false
-				return result, nil
+				return buf.String(), nil
 			}
 		case xml.CharData:
 			if isOn {
-				result = string(v[:])
+				xml.EscapeText(buf, v)
 			}
 		}
 	}
-	return result, nil
+	return buf.String(), nil
 }
