@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -67,6 +68,46 @@ func contains(text string, categories []string) bool {
 	return false
 }
 
+type Links []string
+
+func internalLinks(corpus string) (Links, error) {
+	l := make(Links, 0)
+	regex, err := regexp.Compile("[[].*?[]]]")
+	if err != nil {
+		return l, fmt.Errorf("error occured while getting internal links: %v", err)
+	}
+	return regex.FindStringSubmatch("[0-9A-Za-zÀ-ÖØ-öø-ÿ ]+"), nil
+}
+
+type WordsPagesRelation struct {
+	words     []string
+	pages     []string
+	wordIDs   map[string]int
+	pagesID   map[string]int
+	relations [][]int
+}
+
+func NewWordPagesRelation(words []string, pages ...string) *WordsPagesRelation {
+	wIds := make(map[string]int)
+	pIds := make(map[string]int)
+	for i, v := range words {
+		wIds[v] = i
+	}
+	if len(pages) > 0 {
+		for i, v := range pages {
+			pIds[v] = i
+		}
+	}
+	return &WordsPagesRelation{wordIDs: nil, relations: nil}
+}
+
+func WordsPagesRelation(words []string, text []string) {
+	wpr := make([][]int, len(words))
+	for i, w := range wpr {
+		w = make([]int, 0)
+	}
+}
+
 func Extract(tag string, decoder *xml.Decoder) (string, error) {
 	isOn := false
 	result := make([]byte, 0)
@@ -74,6 +115,9 @@ func Extract(tag string, decoder *xml.Decoder) (string, error) {
 
 	for {
 		t, err := decoder.Token()
+		if err == io.EOF {
+			return "", err
+		}
 		if err != nil {
 			return "", fmt.Errorf("error occured in Extract: %v", err)
 		}
