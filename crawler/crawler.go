@@ -1,9 +1,11 @@
 package crawler
 
 import (
+	"bytes"
 	"encoding/xml"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"regexp"
 	"sort"
@@ -19,6 +21,7 @@ import (
 
 const pagesToExtract = 200000
 const output = "dataset.xml"
+const stopwords = "stopwords-fr.txt"
 const wordsToKeep = 10000
 
 var categories = []string{"ingenierie", "voiture", "pilot", "moteur", "auto", "mobile", "constructeur"}
@@ -26,6 +29,7 @@ var categories = []string{"ingenierie", "voiture", "pilot", "moteur", "auto", "m
 type Crawler struct {
 	inputPath      string
 	wordDictionary []string
+	stopWords      map[string]int
 }
 
 type Word struct {
@@ -36,9 +40,35 @@ type Word struct {
 //NewCrawler is a constructor for a basic Crawler struct with a path to the xml file to be processed
 //and a wordDictionary containing the n most frequent words
 func NewCrawler(path string) *Crawler {
-	return &Crawler{inputPath: path, wordDictionary: make([]string, 0)}
+	return &Crawler{inputPath: path,
+		wordDictionary: make([]string, 0),
+		stopWords:      stopWords(),
+	}
 }
 
+func stopWords() map[string]int {
+	hmap := make(map[string]int)
+	sw, err := os.Open(stopwords)
+	if err != nil {
+		fmt.Println("Failed to open stopwords file.")
+		return hmap
+	}
+	s, err := ioutil.ReadAll(sw)
+	if err != nil {
+		fmt.Println("Failed top read stopwords file.")
+		return hmap
+	}
+
+	list := strings.Split(bytes.NewBuffer(s).String(), "\n")
+	for _, w := range list {
+		if _, ok := hmap[w]; !ok {
+			hmap[w] = 1
+		}
+	}
+	return hmap
+}
+
+//Prepare generates dataset and fill dictionary before CLI
 func (c *Crawler) Prepare() error {
 	fmt.Println("Prepare..")
 	err := c.dataset()
@@ -75,7 +105,6 @@ func (c *Crawler) fillDictionary() error {
 			break
 		}
 		if err != nil {
-			//Need to handle EOF
 			return fmt.Errorf("error occured in fillDictionary: %v", err)
 		}
 
@@ -83,7 +112,7 @@ func (c *Crawler) fillDictionary() error {
 		//Iterate through corpus and generate list of Word with their freq
 		for _, word := range corpus {
 			w, err := formatWord(word)
-			if err != nil {
+			if _, ok := c.stopWords[w]; ok || err != nil {
 				continue
 			}
 			if val, ok := wordIndex[w]; ok {
@@ -122,7 +151,7 @@ func removeAccents(s string) (string, error) {
 
 func formatWord(word string) (string, error) {
 	word, _ = removeAccents(strings.ToLower(word))
-	regex, err := regexp.Compile("[a-zA-Z]+")
+	regex, err := regexp.Compile("[A-Za-zÀ-ÖØ-öø-ÿ]+")
 	if err != nil {
 		return "", err
 	}
@@ -145,6 +174,9 @@ func doCorpus(title, text string) []string {
 //Throw an error if it fails to read the token
 func extractPage(decoder *xml.Decoder) (string, string, error) {
 	title, err := parseutils.Extract("title", decoder)
+	if err == io.EOF {
+		return "", "", err
+	}
 	if err != nil {
 		return "", "", fmt.Errorf("error occured in extractPage title: %v", err)
 	}
