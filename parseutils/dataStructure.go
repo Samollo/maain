@@ -1,28 +1,19 @@
 package parseutils
 
+import "github.com/Samollo/maain/constants"
+
 type CLI struct {
-	c   []float32
-	l   []int
-	i   []int
-	wpr *WordsPagesRelation
+	c []float32
+	l []int
+	i []int
 }
 
-func NewCLI(r *WordsPagesRelation) *CLI {
-	return &CLI{c: make([]float32, 0), l: make([]int, len(r.pagesID)), i: make([]int, 0)}
+func NewCLI() *CLI {
+	return &CLI{c: make([]float32, 0), l: make([]int, constants.PagesToExtract), i: make([]int, 0)}
 }
 
-func (cli *CLI) AddPage(pageId int) error {
-	p, err := cli.wpr.GetPage(pageId)
-	if err != nil {
-		return err
-	}
-
-	l, err := internalLinks(p)
-	if err != nil {
-		return err
-	}
-
-	l = removeDuplicates(l)
+func (cli *CLI) AddPage(pageId int, links Links) error {
+	l := removeDuplicates(links)
 
 	coef := float32(1) / float32(len(l))
 
