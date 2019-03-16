@@ -3,7 +3,7 @@ package parseutils
 type WordsPagesRelation struct {
 	words     []string
 	pages     []string
-	wordIDs   map[string]int
+	wordsID   map[string]int
 	pagesID   map[string]int
 	relations [][]*Pair
 	// not enough, need to check frequency of a word into a page
@@ -20,7 +20,7 @@ func NewWordPagesRelation(words []string, pagesName ...string) *WordsPagesRelati
 			pIds[v] = i
 		}
 	}
-	return &WordsPagesRelation{wordIDs: nil, relations: nil}
+	return &WordsPagesRelation{words: words, pages: pagesName, wordsID: wIds, pagesID: pIds, relations: nil}
 }
 
 func (wpr *WordsPagesRelation) WordByID(id int) string {
@@ -28,7 +28,7 @@ func (wpr *WordsPagesRelation) WordByID(id int) string {
 }
 
 func (wpr *WordsPagesRelation) WordByValue(word string) int {
-	return wpr.wordIDs[word]
+	return wpr.wordsID[word]
 }
 
 func (wpr *WordsPagesRelation) PageByID(id int) string {
@@ -47,11 +47,11 @@ func (wpr *WordsPagesRelation) addPage(title string, corpus string) {
 	}
 
 	//update the relations
-	words := extractWords(title, corpus, nil)
+	words, total := extractWords(title, corpus, nil, nil)
 	for _, w := range words {
 		//if word from page is into our hashmap then update the relations
-		if index, ok := wpr.wordIDs[w.String()]; !ok {
-			page := &Pair{wpr.pagesID[title], w.Frequence()}
+		if index, ok := wpr.wordsID[w.String()]; !ok {
+			page := &Pair{wpr.pagesID[title], w.Frequence() / total}
 			wpr.relations[index] = append(wpr.relations[index], page)
 			wpr.pages = append(wpr.pages, title)
 			wpr.pagesID[title] = len(wpr.pages) - 1

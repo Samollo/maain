@@ -24,6 +24,7 @@ func GenerateDataset(input string, categories []string) ([]string, []string, err
 	xmlFile, err := os.Open(input)
 	titles := make([]string, 0)
 	wordFreq := make([]*Word, 0)
+	wordIndex := make(map[string]int)
 
 	if err != nil {
 		return nil, nil, fmt.Errorf("an error occured. os.Open(%v) in GenerateDaset(): %v", input, err)
@@ -56,7 +57,7 @@ func GenerateDataset(input string, categories []string) ([]string, []string, err
 				content, _ := Extract("text", decoder)
 				if contains(content, categories) {
 					titles = append(titles, title)
-					wordFreq = extractWords(title, content, wordFreq)
+					wordFreq, _ = extractWords(title, content, wordFreq, wordIndex)
 					outputFile.WriteString("<title>")
 					outputFile.WriteString(title)
 					outputFile.WriteString("</title>\n")
@@ -94,11 +95,15 @@ func stopWords() map[string]int {
 	return hmap
 }
 
-func extractWords(title, content string, wordFreq []*Word) []*Word {
+//This function extract the Words(value, frequence) and the number of word in the corpus
+func extractWords(title, content string, wordFreq []*Word, wordIndex map[string]int) ([]*Word, int) {
 	if wordFreq == nil {
+		//fmt.Printf("here")
 		wordFreq = make([]*Word, 0)
 	}
-	wordIndex := make(map[string]int)
+	if wordIndex == nil {
+		wordIndex = make(map[string]int)
+	}
 	stopWords := stopWords()
 	corpus := DoCorpus(title, content)
 	//Iterate through corpus and generate list of Word with their freq
@@ -115,7 +120,7 @@ func extractWords(title, content string, wordFreq []*Word) []*Word {
 		}
 	}
 
-	return wordFreq
+	return wordFreq, len(corpus)
 }
 
 func sortWords(words []*Word) []string {
@@ -140,6 +145,7 @@ func sortWords(words []*Word) []string {
 }
 
 func contains(text string, categories []string) bool {
+
 	for _, v := range categories {
 		if strings.Contains(text, v) {
 			return true
