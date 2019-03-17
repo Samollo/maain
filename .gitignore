@@ -13,3 +13,5 @@
 frwiki-debut.xml
 .DS_Store
 *.xml
+
+\.idea/

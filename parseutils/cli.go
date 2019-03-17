@@ -9,7 +9,11 @@ type CLI struct {
 }
 
 func NewCLI() *CLI {
-	return &CLI{c: make([]float32, 0), l: make([]int, constants.PagesToExtract), i: make([]int, 0)}
+	return &CLI{
+		c: make([]float32, 0),
+		l: make([]int, constants.PagesToExtract),
+		i: make([]int, 0)
+	}
 }
 
 func (cli *CLI) AddPage(pageId int, links Links) error {

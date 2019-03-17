@@ -21,13 +21,14 @@ import (
 func GenerateDataset(input string, categories []string) ([]string, []string, error) {
 	pageProcessed := 0
 	total := 0
-	xmlFile, err := os.Open(input)
 	titles := make([]string, 0)
 	wordFreq := make([]*Word, 0)
 
+	xmlFile, err := os.Open(input)
 	if err != nil {
 		return nil, nil, fmt.Errorf("an error occured. os.Open(%v) in GenerateDaset(): %v", input, err)
 	}
+
 	outputFile, err := os.Create(constants.Output)
 	if err != nil {
 		return nil, nil, fmt.Errorf("an error occured. os.Create(%v) failed in GenerateDaset(): %v", constants.Output, err)
