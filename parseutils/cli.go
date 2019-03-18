@@ -12,12 +12,12 @@ func NewCLI() *CLI {
 	return &CLI{
 		c: make([]float32, 0),
 		l: make([]int, constants.PagesToExtract),
-		i: make([]int, 0)
+		i: make([]int, 0),
 	}
 }
 
 func (cli *CLI) AddPage(pageId int, links Links) error {
-	l := removeDuplicates(links)
+	l := links
 
 	coef := float32(1) / float32(len(l))
 
@@ -33,21 +33,4 @@ func (cli *CLI) AddPage(pageId int, links Links) error {
 
 	cli.l = append(cli.l, nbLink)
 	return nil
-}
-
-func removeDuplicates(elements Links, addToRemove ...int) Links {
-	encountered := make(map[int]bool)
-	for _, value := range addToRemove {
-		encountered[value] = true
-	}
-
-	result := make(Links, 0)
-
-	for v := range elements {
-		if !encountered[elements[v]] {
-			encountered[elements[v]] = true
-			result = append(result, elements[v])
-		}
-	}
-	return result
 }

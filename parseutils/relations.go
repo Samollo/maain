@@ -21,10 +21,10 @@ func NewWordPagesRelation(words []string, pagesName ...string) *WordsPagesRelati
 		}
 	}
 	return &WordsPagesRelation{
-		words: words,
-		pages: pagesName,
-		wordsID: wIds,
-		pagesID: pIds,
+		words:     words,
+		pages:     pagesName,
+		wordsID:   wIds,
+		pagesID:   pIds,
 		relations: nil,
 	}
 }
@@ -57,11 +57,7 @@ func (wpr *WordsPagesRelation) addPage(title string, corpus string) {
 	for _, w := range words {
 		//if word from page is into our hashmap then update the relations
 		if index, ok := wpr.wordsID[w.String()]; !ok {
-<<<<<<< HEAD
 			page := &Pair{wpr.pagesID[title], w.Frequence() / total}
-=======
-			page := &Pair{wpr.pagesID[title], w.Frequence()}
->>>>>>> 8f56da71f0c6f2d87140a905a7d422c14a78bb92
 			wpr.relations[index] = append(wpr.relations[index], page)
 			wpr.pages = append(wpr.pages, title)
 			wpr.pagesID[title] = len(wpr.pages) - 1

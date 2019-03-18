@@ -13,7 +13,7 @@ type Word struct {
 func NewWord(value string) *Word {
 	return &Word{
 		value: value,
-		freq:  1
+		freq:  1,
 	}
 }
 
