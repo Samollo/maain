@@ -11,7 +11,10 @@ type Word struct {
 }
 
 func NewWord(value string) *Word {
-	return &Word{value: value, freq: 1}
+	return &Word{
+		value: value,
+		freq:  1
+	}
 }
 
 func (w *Word) Increment() {

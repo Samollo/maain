@@ -17,7 +17,8 @@ type Crawler struct {
 //NewCrawler is a constructor for a basic Crawler struct with a path to the xml file to be processed
 //and a wordDictionary containing the n most frequent words
 func NewCrawler(path string) *Crawler {
-	return &Crawler{inputPath: path,
+	return &Crawler{
+		inputPath:      path,
 		wordDictionary: make([]string, 0),
 		wpr:            nil,
 	}
