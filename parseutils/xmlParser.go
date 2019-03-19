@@ -24,6 +24,7 @@ func GenerateDataset(input string, categories []string) ([]string, []string, err
 	titles := make([]string, 0)
 	wordFreq := make([]*Word, 0)
 	wordIndex := make(map[string]int)
+	stopWords := StopWords()
 
 	xmlFile, err := os.Open(input)
 	if err != nil {
@@ -57,20 +58,18 @@ func GenerateDataset(input string, categories []string) ([]string, []string, err
 				title, _ := Extract("title", decoder)
 				content, _ := Extract("text", decoder)
 				if contains(content, categories) {
+					title, _ = removeAccents(strings.ToLower(title))
 					titles = append(titles, title)
-					wordFreq, _ = extractWords(title, content, wordFreq, wordIndex)
-					outputFile.WriteString("<title>")
-					outputFile.WriteString(title)
-					outputFile.WriteString("</title>\n")
-					outputFile.WriteString("<text>")
-					outputFile.WriteString(content)
-					outputFile.WriteString("</text>\n")
+					wordFreq, content = extractWords(title, content, wordFreq, wordIndex, stopWords)
+					serialize(outputFile, title, content)
 					pageProcessed++
 				}
 			}
 		}
 	}
 	fmt.Printf("%v pages extracted on a total of %v\n", pageProcessed, total)
+	fmt.Println(len(wordFreq))
+
 	return sortWords(wordFreq), titles, nil
 }
 
