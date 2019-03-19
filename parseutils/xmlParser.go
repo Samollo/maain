@@ -73,7 +73,21 @@ func GenerateDataset(input string, categories []string) ([]string, []string, err
 	return sortWords(wordFreq), titles, nil
 }
 
-func stopWords() map[string]int {
+func serialize(f *os.File, title string, content string) {
+	f.WriteString("<page>\n<title>")
+	f.WriteString(title)
+	f.WriteString("</title>\n")
+	f.WriteString("<text>")
+	f.WriteString(content)
+	f.WriteString("</text>\n</page>\n")
+}
+
+func splitWord(word string) []string {
+	array := regexp.MustCompile("[ \n\r\n\t]+").Split(word, -1)
+	return array
+}
+
+func StopWords() map[string]int {
 	hmap := make(map[string]int)
 	sw, err := os.Open(constants.Stopwords)
 	if err != nil {
