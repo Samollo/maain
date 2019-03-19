@@ -110,7 +110,7 @@ func StopWords() map[string]int {
 }
 
 //This function extract the Words(value, frequence) and the number of word in the corpus
-func extractWords(title, content string, wordFreq []*Word, wordIndex map[string]int) ([]*Word, int) {
+func extractWords(title, content string, wordFreq []*Word, wordIndex map[string]int, stopWords map[string]int) ([]*Word, string) {
 	if wordFreq == nil {
 		//fmt.Printf("here")
 		wordFreq = make([]*Word, 0)
@@ -118,23 +118,24 @@ func extractWords(title, content string, wordFreq []*Word, wordIndex map[string]
 	if wordIndex == nil {
 		wordIndex = make(map[string]int)
 	}
-	stopWords := stopWords()
-	corpus := DoCorpus(title, content)
+	corpus, _ := FormatWord(content)
 	//Iterate through corpus and generate list of Word with their freq
-	for _, word := range corpus {
-		w, err := FormatWord(word)
-		if _, ok := stopWords[w]; ok || err != nil {
+	for _, w := range corpus {
+		if _, ok := stopWords[w]; ok {
 			continue
 		}
 		if val, ok := wordIndex[w]; ok {
 			wordFreq[val].Increment()
 		} else {
 			wordFreq = append(wordFreq, NewWord(w))
-			wordIndex[word] = len(wordFreq) - 1
+			wordIndex[w] = len(wordFreq) - 1
 		}
 	}
-
-	return wordFreq, len(corpus)
+	regex, _ := regexp.Compile("[[].*?[]]]")
+	//fmt.Println(len(regex.FindAllString(content, -1)))
+	tmp := regex.FindAllString(content, -1)
+	//fmt.Println(tmp)
+	return wordFreq, strings.Join(tmp, " ")
 }
 
 func sortWords(words []*Word) []string {
@@ -152,7 +153,7 @@ func sortWords(words []*Word) []string {
 	//add to sorted slice of string
 	for i := 0; i < len(words); i++ {
 		sortedWords = append(sortedWords, words[i].value)
-		fmt.Printf("[%s]\n", sortedWords[len(sortedWords)-1])
+		//fmt.Printf("[%s]\n", sortedWords[len(sortedWords)-1])
 	}
 
 	return sortedWords
@@ -170,7 +171,7 @@ func contains(text string, categories []string) bool {
 
 type Links []string
 
-func InternalLinks(corpus string, wpr *WordsPagesRelation) (Links, error) {
+func InternalLinks(corpus string, wpr *WordsPagesRelation) ([]int, error) {
 	links := make(Links, 0)
 
 	regex, err := regexp.Compile("[[].*?[]]]")
@@ -181,14 +182,16 @@ func InternalLinks(corpus string, wpr *WordsPagesRelation) (Links, error) {
 
 	re, _ := regexp.Compile("[0-9A-Za-zÀ-ÖØ-öø-ÿ ]+")
 	for _, v := range strMatched {
-		links = append(links, re.FindAllString(v, -1)[0]) //We extract all the link within the tag [[...]]
+		if toAppend := re.FindAllString(v, -1); len(toAppend) > 0 {
+			links = append(links, re.FindAllString(v, -1)[0]) //We extract all the link within the tag [[...]]
+		}
 	}
 
 	//If link is not in our dataset, do not keep it.
-	inDataset := make(Links, 0)
+	inDataset := make([]int, 0)
 	for _, link := range links {
-		if _, ok := wpr.pagesID[link]; ok {
-			inDataset = append(inDataset, link)
+		if id, ok := wpr.pagesID[link]; ok {
+			inDataset = append(inDataset, id)
 		}
 	}
 
@@ -234,28 +237,27 @@ func removeAccents(s string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	//	fmt.Println(output)
 	return output, nil
 }
 
-func FormatWord(word string) (string, error) {
+func FormatWord(word string) ([]string, error) {
 	word, _ = removeAccents(strings.ToLower(word))
-	regex, err := regexp.Compile("[A-Za-zÀ-ÖØ-öø-ÿ]+")
+	regex, err := regexp.Compile("[a-z]{4,}")
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	tmp := regex.FindString(word)
-	if tmp == "" {
-		return "", fmt.Errorf("no word found.")
-	}
+	tmp := regex.FindAllString(word, -1)
+	//	fmt.Println(tmp)
 	return tmp, nil
 }
 
 //doCorpus returns a string slice containing words of title and text of an extracted page
 //need to format word and check if they are real words
 func DoCorpus(title, text string) []string {
-	corpus := strings.Split(title, " ")
-	tmp := strings.Replace(text, "\n", " ", -1)
-	return append(corpus, strings.Split(tmp, " ")...)
+	t := splitWord(title)
+	a := splitWord(text)
+	return append(t, a...)
 }
 
 //extractPage returns the title of the page and its content.
