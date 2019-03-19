@@ -40,10 +40,56 @@ func (c *Crawler) Prepare() error {
 
 	c.wordDictionary = words
 	c.wpr = parseutils.NewWordPagesRelation(c.wordDictionary, titles...)
-	return nil
+	//fmt.Println("len(words): ", len(c.wpr.Words()))
+	//fmt.Printf("Word frequency: %v\n", c.wpr.WordByID(1000))
+	fmt.Println("pages[0]: ", c.wpr.PageByID(0))
+	err = c.cliRelation()
+	if err != nil {
+		fmt.Println("error")
+		return err
+	}
+	fmt.Printf("C: %v\n", c.cli.C())
+	fmt.Printf("L: %v\n", c.cli.L())
+	fmt.Printf("I: %v\n", c.cli.I())
+
+	return err
 }
 
 func (c *Crawler) dataset() ([]string, []string, error) {
 	fmt.Println("Dataset..")
 	return parseutils.GenerateDataset(c.inputPath, categories)
+}
+
+func (c *Crawler) cliRelation() error {
+	xmlFile, err := os.Open(constants.Output)
+	if err != nil {
+		return fmt.Errorf("an error occured. os.Open: %v", err)
+	}
+
+	decoder := xml.NewDecoder(xmlFile)
+	for {
+		t, err := decoder.Token()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			fmt.Printf("decoder.Token() failed with '%s'\n", err)
+			break
+		}
+
+		switch v := t.(type) {
+		case xml.StartElement:
+			if v.Name.Local == "page" {
+				title, _ := parseutils.Extract("title", decoder)
+				//fmt.Println(title)
+				content, _ := parseutils.Extract("text", decoder)
+				ids, err := parseutils.InternalLinks(content, c.wpr)
+				if err != nil {
+					return err
+				}
+				c.cli.AddPage(c.wpr.PageByValue(title), ids)
+			}
+		}
+	}
+	return nil
 }
