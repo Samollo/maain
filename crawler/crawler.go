@@ -1,8 +1,12 @@
 package crawler
 
 import (
+	"encoding/xml"
 	"fmt"
+	"io"
+	"os"
 
+	"github.com/Samollo/maain/constants"
 	"github.com/Samollo/maain/parseutils"
 )
 
@@ -12,6 +16,7 @@ type Crawler struct {
 	inputPath      string
 	wordDictionary []string
 	wpr            *parseutils.WordsPagesRelation
+	cli            *parseutils.CLI
 }
 
 //NewCrawler is a constructor for a basic Crawler struct with a path to the xml file to be processed
@@ -21,6 +26,7 @@ func NewCrawler(path string) *Crawler {
 		inputPath:      path,
 		wordDictionary: make([]string, 0),
 		wpr:            nil,
+		cli:            parseutils.NewCLI(),
 	}
 }
 
