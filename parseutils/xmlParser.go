@@ -70,7 +70,7 @@ func GenerateDataset(input string, categories []string) ([]string, []string, []i
 			}
 		}
 	}
-	fmt.Printf("%v pages extracted on a total of %v\n", pageProcessed, total)
+	fmt.Printf("%v pages extracted on a total of %v read.\n", pageProcessed, total)
 
 	return sortWords(wordFreq), titles, pagesLength, nil
 }
@@ -114,7 +114,6 @@ func StopWords() map[string]int {
 //This function extract the Words(value, frequence) and the number of word in the corpus
 func extractWords(title, content string, wordFreq []*Word, wordIndex map[string]int, stopWords map[string]int) ([]*Word, string, int) {
 	if wordFreq == nil {
-		//fmt.Printf("here")
 		wordFreq = make([]*Word, 0)
 	}
 	if wordIndex == nil {
@@ -151,13 +150,12 @@ func sortWords(words []*Word) []string {
 	if len(words) > constants.WordsToKeep {
 		words = words[:constants.WordsToKeep]
 	} else {
-		fmt.Printf("not enough words.")
+		fmt.Printf("not enough words.\n")
 	}
 	sort.SliceStable(words, func(i, j int) bool { return words[i].value < words[j].value })
 	//add to sorted slice of string
 	for i := 0; i < len(words); i++ {
 		sortedWords = append(sortedWords, words[i].value)
-		//fmt.Printf("[%s]\n", sortedWords[len(sortedWords)-1])
 	}
 
 	return sortedWords
@@ -189,7 +187,6 @@ func InternalLinks(corpus string, wpr *WordsPagesRelation) ([]int, error) {
 		if toAppend := re.FindAllString(v, -1); len(toAppend) > 0 {
 			tmp := re.FindAllString(v, -1)
 			for _, v := range tmp {
-				//	fmt.Println(v)
 				links = append(links, v) //We extract all the link within the tag [[...]]
 
 			}
@@ -246,7 +243,6 @@ func removeAccents(s string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	//	fmt.Println(output)
 	return output, nil
 }
 
@@ -257,7 +253,6 @@ func FormatWord(word string) ([]string, error) {
 		return nil, err
 	}
 	tmp := regex.FindAllString(word, -1)
-	//	fmt.Println(tmp)
 	return tmp, nil
 }
 

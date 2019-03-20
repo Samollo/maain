@@ -49,8 +49,6 @@ func (c *Crawler) Prepare() error {
 	pageRanks := c.CLI.PageRank()
 
 	c.wpr.Update(pageRanks)
-	//c.wpr.Print()
-	fmt.Printf("PageRanks: %v\n", pageRanks[len(pageRanks)-1])
 	c.serialize()
 
 	return err
@@ -62,6 +60,7 @@ func (c *Crawler) dataset() ([]string, []string, []int, error) {
 }
 
 func (c *Crawler) cliRelation() error {
+	fmt.Println("CLI and Word-Pages relation...")
 	stopWords := parseutils.StopWords()
 	xmlFile, err := os.Open(constants.Output)
 	if err != nil {
@@ -83,7 +82,6 @@ func (c *Crawler) cliRelation() error {
 		case xml.StartElement:
 			if v.Name.Local == "page" {
 				title, _ := parseutils.Extract("title", decoder)
-				//fmt.Println(title)
 				content, _ := parseutils.Extract("text", decoder)
 				ids, err := parseutils.InternalLinks(content, c.wpr)
 				if err != nil {
@@ -102,7 +100,7 @@ func (c *Crawler) cliRelation() error {
 }
 
 func (c *Crawler) serialize() error {
-	fmt.Println("serialize...")
+	fmt.Println("Serialize...")
 	f, err := os.Create("wordpages")
 	if err != nil {
 		return err
