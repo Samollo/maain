@@ -16,7 +16,7 @@ type Crawler struct {
 	inputPath      string
 	wordDictionary []string
 	wpr            *parseutils.WordsPagesRelation
-	cli            *parseutils.CLI
+	CLI            *parseutils.CLI
 }
 
 //NewCrawler is a constructor for a basic Crawler struct with a path to the xml file to be processed
@@ -26,7 +26,7 @@ func NewCrawler(path string) *Crawler {
 		inputPath:      path,
 		wordDictionary: make([]string, 0),
 		wpr:            nil,
-		cli:            parseutils.NewCLI(),
+		CLI:            parseutils.NewCLI(),
 	}
 }
 
@@ -42,15 +42,15 @@ func (c *Crawler) Prepare() error {
 	c.wpr = parseutils.NewWordPagesRelation(c.wordDictionary, titles...)
 	//fmt.Println("len(words): ", len(c.wpr.Words()))
 	//fmt.Printf("Word frequency: %v\n", c.wpr.WordByID(1000))
-	fmt.Println("pages[0]: ", c.wpr.PageByID(0))
+	//	fmt.Println("pages[0]: ", c.wpr.PageByID(0))
 	err = c.cliRelation()
 	if err != nil {
 		fmt.Println("error")
 		return err
 	}
-	fmt.Printf("C: %v\n", c.cli.C())
-	fmt.Printf("L: %v\n", c.cli.L())
-	fmt.Printf("I: %v\n", c.cli.I())
+	//	fmt.Printf("C: %v\n", c.CLI.C())
+	//	fmt.Printf("L: %v\n", c.CLI.L())
+	//	fmt.Printf("I: %v\n", c.CLI.I())
 
 	return err
 }
@@ -87,7 +87,7 @@ func (c *Crawler) cliRelation() error {
 				if err != nil {
 					return err
 				}
-				c.cli.AddPage(c.wpr.PageByValue(title), ids)
+				c.CLI.AddPage(c.wpr.PageByValue(title), ids)
 			}
 		}
 	}
