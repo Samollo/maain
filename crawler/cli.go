@@ -77,13 +77,13 @@ func (cli *CLI) PageRank(id ...int) []float64 {
 			sum = cli.pageRankSum(PK)
 		}
 		delta = cli.updateDelta(P, PK, sum)
-		//	fmt.Printf("Probability of vector P is %v\n\n", P)
+		fmt.Printf("Probability of vector P is %v\n\n", P)
 
 		P = PK
 		count++
 	}
 
-	fmt.Printf("---%v tours---\n", count)
+	fmt.Printf("---%v steps---\n", count)
 	return P
 }
 
@@ -112,12 +112,12 @@ func (cli *CLI) pageRankSum(P []float64) float64 {
 }
 
 func (cli *CLI) updateDelta(a, b []float64, SumOfPR float64) float64 {
-	sum := 0.0
+	delta := 0.0
 	for i := range b {
 		if SumOfPR != 0 {
 			b[i] = b[i] + ((1 - SumOfPR) / float64(len(b)))
 		}
-		sum += math.Pow(b[i]-a[i], 2)
+		delta += math.Abs(b[i] - a[i])
 	}
-	return sum / float64(len(b))
+	return delta
 }
