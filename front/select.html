@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></script>
+    <title>{{.PageTitle}}</title>
+</head>
+
+<body>
+    {{with $1:=.PageTitle}}
+    <form action="/result" method="post">
+        <input type="text" name=valueEntered required minlength="4" size="100">
+        <input type="submit" value="Search">
+    </form>
+    {{end}}
+</body>
+
+</html>
