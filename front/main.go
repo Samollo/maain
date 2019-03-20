@@ -23,7 +23,7 @@ func LaunchFront() {
 }
 
 func DisplayHomePage(w http.ResponseWriter, r *http.Request) {
-	title := "Gogole"
+	title := "Home"
 
 	pv := PageVariables{
 		PageTitle: title,
@@ -41,11 +41,11 @@ func DisplayHomePage(w http.ResponseWriter, r *http.Request) {
 }
 
 type Variable struct {
-	value string
+	Value string
 }
 
 func UserSelected(w http.ResponseWriter, r *http.Request) {
-	title := "Gogole"
+	title := "Search"
 	r.ParseForm()
 
 	mail := r.FormValue("valueEntered")
