@@ -47,14 +47,17 @@ func (r *Request) ReturnFoundPages(sentence string) []string {
 	minSlice := 0
 	pagesConcern := make([][]string, 0)
 	isChange := false
-	for i, v := range words {
+
+	cmp := 0
+	for _, v := range words {
 		if value, ok := r.wordPageRelation[v]; ok {
 			pagesConcern = append(pagesConcern, value)
 			if len(value) < minLength {
 				isChange = true
 				minLength = len(value)
-				minSlice = i
+				minSlice = cmp
 			}
+			cmp++
 		}
 	}
 	if !isChange {
@@ -71,13 +74,11 @@ func (r *Request) ReturnFoundPages(sentence string) []string {
 			}
 		}
 	}
-
 	mvpPage := make([]string, 0)
 	for _, v := range pagesConcern[minSlice] {
 		if minSizePage[v] == len(words) {
 			mvpPage = append(mvpPage, v)
 		}
 	}
-
 	return mvpPage
 }

@@ -13,6 +13,11 @@
         <input type="submit" value="Search">
     </form>
     {{end}}
+    {{with $2:=.}}
+    {{range $2}}
+    <a href="https://fr.wikipedia.org/wiki/{{.value}}">hello</a><br/>
+    {{end}}
+    {{end}}
 </body>
 
 </html>
