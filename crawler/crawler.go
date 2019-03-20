@@ -47,7 +47,7 @@ func (c *Crawler) Prepare() error {
 	}
 
 	pageRanks := c.CLI.PageRank()
-	c.wpr.update(pageRanks)
+	c.wpr.Update(pageRanks)
 	return err
 }
 

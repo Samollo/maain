@@ -31,7 +31,7 @@ func NewWordPagesRelation(words []string, pagesName ...string) *WordsPagesRelati
 	}
 }
 
-func (wpr *WordsPagesRelation) update(PageRank []float64) {
+func (wpr *WordsPagesRelation) Update(PageRank []float64) {
 	for index, pages := range wpr.relations {
 		pagesUpdated := make([]*Pair, 0, len(pages))
 		for _, page := range pages {
