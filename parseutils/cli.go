@@ -2,25 +2,26 @@ package parseutils
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/Samollo/maain/constants"
 )
 
 type CLI struct {
-	c []float32
+	c []float64
 	l []int
 	i []int
 }
 
 func NewCLI() *CLI {
 	return &CLI{
-		c: make([]float32, 0),
+		c: make([]float64, 0),
 		l: make([]int, 0, constants.PagesToExtract),
 		i: make([]int, 0),
 	}
 }
 
-func (cli *CLI) C() []float32 {
+func (cli *CLI) C() []float64 {
 	return cli.c
 }
 
@@ -32,7 +33,7 @@ func (cli *CLI) I() []int {
 }
 
 func (cli *CLI) AddPage(pageId int, links []int) error {
-	coef := float32(1) / float32(len(links))
+	coef := float64(1) / float64(len(links))
 
 	for _, value := range links {
 		cli.c = append(cli.c, coef)
@@ -49,12 +50,12 @@ func (cli *CLI) AddPage(pageId int, links []int) error {
 	return nil
 }
 
-func (cli *CLI) transposer(v []float32) []float32 {
+func (cli *CLI) transposer(v []float64) []float64 {
 	n := len(cli.l) - 1
-	result := make([]float32, n)
+	result := make([]float64, n)
 
 	for i := 0; i < n; i++ {
-		for j := cli.l[i]; j < cli.l[i+1]-1; j++ {
+		for j := cli.l[i]; j < cli.l[i+1]; j++ {
 			result[cli.i[j]] += cli.c[j] * v[i]
 		}
 	}
@@ -62,15 +63,32 @@ func (cli *CLI) transposer(v []float32) []float32 {
 	return result
 }
 
-func (cli *CLI) PageRank(id int, step int) {
-	n := len(cli.l)
-	P := make([]float32, n)
-	P[id] = 1
+func (cli *CLI) PageRank(id int) {
+	n := len(cli.l) - 1
 
-	for i := 0; i < step; i++ {
+	P := make([]float64, n)
+	P[id] = 1
+	epsilon := 0.0004
+	var delta float64
+	delta = 1
+	for delta > epsilon {
 		PK := cli.transposer(P)
-		//todo verification
+
+		//	fmt.Println(len(P))
+		//	fmt.Println(len(PK))
+		delta = math.Abs(sum(P, PK))
+		//	fmt.Printf("delta: %v\n", delta)
+		//	fmt.Printf("Probality of P: %v\n", P)
+		//	fmt.Printf("Probality of PK: %v\n", PK)
 		P = PK
-		fmt.Printf("Probality of Page %v: %v", i, P[i])
 	}
+	fmt.Printf("Probability of vector P(%v) is %v\n", id, P)
+}
+
+func sum(a, b []float64) float64 {
+	delta := 0.0
+	for i, _ := range b {
+		delta += b[i] - a[i]
+	}
+	return delta
 }
