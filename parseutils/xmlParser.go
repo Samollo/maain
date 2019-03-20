@@ -59,7 +59,7 @@ func GenerateDataset(input string, categories []string) ([]string, []string, []i
 				title, _ := Extract("title", decoder)
 				content, _ := Extract("text", decoder)
 				if contains(content, categories) {
-					title, _ = removeAccents(strings.ToLower(title))
+					title = strings.ToLower(title)
 					titles = append(titles, title)
 					size := 0
 					wordFreq, content, size = extractWords(title, content, wordFreq, wordIndex, stopWords)
@@ -71,7 +71,6 @@ func GenerateDataset(input string, categories []string) ([]string, []string, []i
 		}
 	}
 	fmt.Printf("%v pages extracted on a total of %v\n", pageProcessed, total)
-	//fmt.Println(len(wordFreq))
 
 	return sortWords(wordFreq), titles, pagesLength, nil
 }

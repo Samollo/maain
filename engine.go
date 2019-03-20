@@ -21,5 +21,11 @@ func main() {
 		cli.AddPage([]int{2, 4})
 		cli.AddPage([]int{})
 		fmt.Println(cli.PageRank())
-	*/
+
+		fmt.Println(cli.C())
+		fmt.Println(cli.L())
+		fmt.Println(cli.I())
+
+		fmt.Printf("%s\n")*/
+
 }
