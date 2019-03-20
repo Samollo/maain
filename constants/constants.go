@@ -1,6 +1,6 @@
 package constants
 
-const PagesToExtract = 200
+const PagesToExtract = 600
 const Output = "dataset.xml"
 const Stopwords = "stopwords-fr.txt"
 const WordsToKeep = 10000

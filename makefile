@@ -10,7 +10,7 @@
     BINARY_UNIX=$(BINARY_NAME)_unix
 
     OUTPUT_FILE=output.xml
-    XML_FILE=small.xml
+    XML_FILE=complete.xml
     MAIN_NAME=engine.go
 all:
 	$(GORUN) $(MAIN_NAME) $(XML_FILE)

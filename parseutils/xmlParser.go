@@ -18,22 +18,23 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
-func GenerateDataset(input string, categories []string) ([]string, []string, error) {
+func GenerateDataset(input string, categories []string) ([]string, []string, []int, error) {
 	pageProcessed := 0
 	total := 0
 	titles := make([]string, 0)
 	wordFreq := make([]*Word, 0)
 	wordIndex := make(map[string]int)
 	stopWords := StopWords()
+	pagesLength := make([]int, 0)
 
 	xmlFile, err := os.Open(input)
 	if err != nil {
-		return nil, nil, fmt.Errorf("an error occured. os.Open(%v) in GenerateDaset(): %v", input, err)
+		return nil, nil, nil, fmt.Errorf("an error occured. os.Open(%v) in GenerateDaset(): %v", input, err)
 	}
 
 	outputFile, err := os.Create(constants.Output)
 	if err != nil {
-		return nil, nil, fmt.Errorf("an error occured. os.Create(%v) failed in GenerateDaset(): %v", constants.Output, err)
+		return nil, nil, nil, fmt.Errorf("an error occured. os.Create(%v) failed in GenerateDaset(): %v", constants.Output, err)
 	}
 
 	decoder := xml.NewDecoder(xmlFile)
@@ -60,7 +61,9 @@ func GenerateDataset(input string, categories []string) ([]string, []string, err
 				if contains(content, categories) {
 					title, _ = removeAccents(strings.ToLower(title))
 					titles = append(titles, title)
-					wordFreq, content = extractWords(title, content, wordFreq, wordIndex, stopWords)
+					size := 0
+					wordFreq, content, size = extractWords(title, content, wordFreq, wordIndex, stopWords)
+					pagesLength = append(pagesLength, size)
 					serialize(outputFile, title, content)
 					pageProcessed++
 				}
@@ -70,7 +73,7 @@ func GenerateDataset(input string, categories []string) ([]string, []string, err
 	fmt.Printf("%v pages extracted on a total of %v\n", pageProcessed, total)
 	//fmt.Println(len(wordFreq))
 
-	return sortWords(wordFreq), titles, nil
+	return sortWords(wordFreq), titles, pagesLength, nil
 }
 
 func serialize(f *os.File, title string, content string) {
@@ -110,7 +113,7 @@ func StopWords() map[string]int {
 }
 
 //This function extract the Words(value, frequence) and the number of word in the corpus
-func extractWords(title, content string, wordFreq []*Word, wordIndex map[string]int, stopWords map[string]int) ([]*Word, string) {
+func extractWords(title, content string, wordFreq []*Word, wordIndex map[string]int, stopWords map[string]int) ([]*Word, string, int) {
 	if wordFreq == nil {
 		//fmt.Printf("here")
 		wordFreq = make([]*Word, 0)
@@ -119,6 +122,7 @@ func extractWords(title, content string, wordFreq []*Word, wordIndex map[string]
 		wordIndex = make(map[string]int)
 	}
 	corpus, _ := FormatWord(content)
+	size := 0
 	//Iterate through corpus and generate list of Word with their freq
 	for _, w := range corpus {
 		if _, ok := stopWords[w]; ok {
@@ -130,12 +134,13 @@ func extractWords(title, content string, wordFreq []*Word, wordIndex map[string]
 			wordFreq = append(wordFreq, NewWord(w))
 			wordIndex[w] = len(wordFreq) - 1
 		}
+		size++
 	}
 	regex, _ := regexp.Compile("[[].*?[]]]")
 	//fmt.Println(len(regex.FindAllString(content, -1)))
 	tmp := regex.FindAllString(content, -1)
 	//fmt.Println(tmp)
-	return wordFreq, strings.Join(tmp, " ")
+	return wordFreq, strings.Join(tmp, " "), size
 }
 
 func sortWords(words []*Word) []string {
@@ -183,7 +188,12 @@ func InternalLinks(corpus string, wpr *WordsPagesRelation) ([]int, error) {
 	re, _ := regexp.Compile("[0-9A-Za-zÀ-ÖØ-öø-ÿ ]+")
 	for _, v := range strMatched {
 		if toAppend := re.FindAllString(v, -1); len(toAppend) > 0 {
-			links = append(links, re.FindAllString(v, -1)[0]) //We extract all the link within the tag [[...]]
+			tmp := re.FindAllString(v, -1)
+			for _, v := range tmp {
+				//	fmt.Println(v)
+				links = append(links, v) //We extract all the link within the tag [[...]]
+
+			}
 		}
 	}
 

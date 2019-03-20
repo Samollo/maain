@@ -33,13 +33,13 @@ func NewCrawler(path string) *Crawler {
 //Prepare generates dataset and fill dictionary before CLI
 func (c *Crawler) Prepare() error {
 	fmt.Println("Prepare..")
-	words, titles, err := c.dataset()
+	words, titles, pagesLength, err := c.dataset()
 	if err != nil {
 		return fmt.Errorf("error occured in Prepare: %v", err)
 	}
 
 	c.wordDictionary = words
-	c.wpr = parseutils.NewWordPagesRelation(c.wordDictionary, titles...)
+	c.wpr = parseutils.NewWordPagesRelation(c.wordDictionary, pagesLength, titles...)
 	err = c.cliRelation()
 	if err != nil {
 		fmt.Println("error")
@@ -47,16 +47,22 @@ func (c *Crawler) Prepare() error {
 	}
 
 	pageRanks := c.CLI.PageRank()
+
 	c.wpr.Update(pageRanks)
+	//c.wpr.Print()
+	fmt.Printf("PageRanks: %v\n", pageRanks[len(pageRanks)-1])
+	c.serialize()
+
 	return err
 }
 
-func (c *Crawler) dataset() ([]string, []string, error) {
+func (c *Crawler) dataset() ([]string, []string, []int, error) {
 	fmt.Println("Dataset..")
 	return parseutils.GenerateDataset(c.inputPath, categories)
 }
 
 func (c *Crawler) cliRelation() error {
+	stopWords := parseutils.StopWords()
 	xmlFile, err := os.Open(constants.Output)
 	if err != nil {
 		return fmt.Errorf("an error occured. os.Open: %v", err)
@@ -76,16 +82,47 @@ func (c *Crawler) cliRelation() error {
 		switch v := t.(type) {
 		case xml.StartElement:
 			if v.Name.Local == "page" {
-				//title, _ := parseutils.Extract("title", decoder)
+				title, _ := parseutils.Extract("title", decoder)
 				//fmt.Println(title)
 				content, _ := parseutils.Extract("text", decoder)
 				ids, err := parseutils.InternalLinks(content, c.wpr)
 				if err != nil {
 					return err
 				}
-				c.CLI.AddPage(ids)
+				c.wpr.AddPage(title, content, stopWords)
+				err = c.CLI.AddPage(ids)
+				if err != nil {
+					fmt.Println(err)
+					return err
+				}
 			}
 		}
 	}
 	return nil
 }
+
+func (c *Crawler) serialize() error {
+	fmt.Println("serialize...")
+	f, err := os.Create("wordpages")
+	if err != nil {
+		return err
+	}
+
+	relations := c.wpr.Relations()
+
+	for i, v := range relations {
+		f.WriteString(c.wpr.WordByID(i))
+		f.WriteString(":")
+		for i, w := range v {
+			f.WriteString(c.wpr.PageByID(w.Id))
+			if i < len(v)-1 {
+				f.WriteString(",")
+			}
+		}
+		f.WriteString("\n")
+	}
+	c.wpr.Relations()
+	return nil
+}
+
+//mot:pages,pages

@@ -1,8 +1,8 @@
 package parseutils
 
 type Pair struct {
-	id  int
-	val float64
+	Id  int
+	Val float64
 }
 
 type Word struct {
@@ -18,7 +18,7 @@ func NewWord(value string) *Word {
 }
 
 func (w *Word) Increment() {
-	w.freq += 1
+	w.freq++
 }
 
 func (w *Word) Frequence() int {
