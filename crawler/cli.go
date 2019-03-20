@@ -77,7 +77,6 @@ func (cli *CLI) PageRank(id ...int) []float64 {
 			sum = cli.pageRankSum(PK)
 		}
 		delta = cli.updateDelta(P, PK, sum)
-		fmt.Printf("Probability of vector P is %v\n\n", P)
 
 		P = PK
 		count++

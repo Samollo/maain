@@ -3,6 +3,9 @@ package parseutils
 import (
 	"fmt"
 	"sort"
+	"strings"
+
+	"github.com/Samollo/maain/constants"
 )
 
 type WordsPagesRelation struct {
@@ -45,7 +48,11 @@ func (wpr *WordsPagesRelation) Update(PageRank []float64) {
 		//pagesUpdated := make([]*Pair, 0)
 		for i, page := range pages {
 			if page.Val > 0.00001 {
-				wpr.relations[index][i].Val = PageRank[page.Id]
+				pr := PageRank[page.Id]
+				if strings.Contains(wpr.pages[page.Id], wpr.words[index]) {
+					pr *= constants.PageRankBoost
+				}
+				wpr.relations[index][i].Val = pr
 			} else {
 				wpr.relations[index][i].Val = -1
 			}
