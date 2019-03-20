@@ -31,6 +31,32 @@ func NewWordPagesRelation(words []string, pagesName ...string) *WordsPagesRelati
 	}
 }
 
+func (wpr *WordsPagesRelation) update(PageRank []float64) {
+	for index, pages := range wpr.relations {
+		pagesUpdated := make([]*Pair, 0, len(pages))
+		for _, page := range pages {
+			if page.val > 0.01 {
+				pagesUpdated = append(pagesUpdated, &Pair{page.id, PageRank[page.id]})
+			}
+		}
+		wpr.relations[index] = sortPagesByRank(pagesUpdated)
+	}
+}
+
+func sortPagesByRank(pages []*Pair) []*Pair {
+	sort.SliceStable(pages, func(i, j int) bool { return pages[i].val > pages[j].val })
+	return pages
+}
+
+func (wpr *WordsPagesRelation) FindPages(word string) []int {
+	id := wpr.pagesID[word]
+	pages := make([]int, 0)
+	for _, v := range wpr.relations[id] {
+		pages = append(pages, v.id)
+	}
+	return pages
+}
+
 func (wpr *WordsPagesRelation) Words() []string {
 	return wpr.words
 }
@@ -75,7 +101,7 @@ func (wpr *WordsPagesRelation) AddPage(title string, corpus string, stopWords ma
 	for _, w := range words {
 		//if word from page is into our hashmap then update the relations
 		if index, ok := wpr.wordsID[w.String()]; !ok {
-			page := &Pair{wpr.pagesID[title], w.Frequence() / len(content)}
+			page := &Pair{wpr.pagesID[title], float64(w.Frequence()) / float64(len(content))}
 			wpr.relations[index] = append(wpr.relations[index], page)
 			wpr.pages = append(wpr.pages, title)
 			wpr.pagesID[title] = len(wpr.pages) - 1

@@ -2,7 +2,7 @@ package parseutils
 
 type Pair struct {
 	id  int
-	val int
+	val float64
 }
 
 type Word struct {
