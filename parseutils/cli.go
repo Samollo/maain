@@ -32,7 +32,7 @@ func (cli *CLI) I() []int {
 	return cli.i
 }
 
-func (cli *CLI) AddPage(pageId int, links []int) error {
+func (cli *CLI) AddPage(links []int) error {
 	coef := float64(1) / float64(len(links))
 
 	for _, value := range links {

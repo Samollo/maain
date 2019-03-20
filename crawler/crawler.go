@@ -80,14 +80,14 @@ func (c *Crawler) cliRelation() error {
 		switch v := t.(type) {
 		case xml.StartElement:
 			if v.Name.Local == "page" {
-				title, _ := parseutils.Extract("title", decoder)
+				//title, _ := parseutils.Extract("title", decoder)
 				//fmt.Println(title)
 				content, _ := parseutils.Extract("text", decoder)
 				ids, err := parseutils.InternalLinks(content, c.wpr)
 				if err != nil {
 					return err
 				}
-				c.cli.AddPage(c.wpr.PageByValue(title), ids)
+				c.cli.AddPage(ids)
 			}
 		}
 	}
