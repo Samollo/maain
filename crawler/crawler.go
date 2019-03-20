@@ -119,7 +119,6 @@ func (c *Crawler) serialize() error {
 		}
 		f.WriteString("\n")
 	}
-	c.wpr.Relations()
 	return nil
 }
 

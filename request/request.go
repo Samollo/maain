@@ -2,6 +2,7 @@ package request
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"math"
 	"os"
@@ -21,6 +22,22 @@ func InitializeRequest(filePath string) Request {
 	return r
 }
 
+//NextLine returns the next line read in the associated file, or an error if EOF
+func NextLine(reader *bufio.Reader) ([]byte, error) {
+	token := make([]byte, 0)
+	for {
+		t, isPrefix, err := reader.ReadLine()
+		if err != nil {
+			return nil, fmt.Errorf("Error in GetLine() of: %v", err)
+		}
+		token = append(token, t...)
+		if !isPrefix {
+			break
+		}
+	}
+	return token, nil
+}
+
 func (r *Request) parseRelationFile(filePath string) {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -28,11 +45,16 @@ func (r *Request) parseRelationFile(filePath string) {
 	}
 	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		k, v := parseLine(scanner.Text())
+	reader := bufio.NewReader(file)
+	for {
+		token, err := NextLine(reader)
+		if err != nil {
+			break
+		}
+		k, v := parseLine(string(token))
 		r.wordPageRelation[k] = v
 	}
+	//fmt.Printf("%v\n", r.wordPageRelation)
 }
 
 func parseLine(line string) (string, []string) {
