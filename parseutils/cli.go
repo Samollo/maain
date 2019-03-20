@@ -50,45 +50,74 @@ func (cli *CLI) AddPage(links []int) error {
 	return nil
 }
 
-func (cli *CLI) transposer(v []float64) []float64 {
+func (cli *CLI) transposer(v []float64, convert ...Randomize) []float64 {
 	n := len(cli.l) - 1
 	result := make([]float64, n)
 
 	for i := 0; i < n; i++ {
 		for j := cli.l[i]; j < cli.l[i+1]; j++ {
+
 			result[cli.i[j]] += cli.c[j] * v[i]
+
+			if convert != nil && j == cli.l[i+1]-1 {
+				random := convert[0]
+				result[cli.i[j]] = random.function(result[cli.i[j]], random.factor)
+			}
 		}
 	}
 
 	return result
 }
 
-func (cli *CLI) PageRank(id int) {
+func (cli *CLI) PageRank(id ...int) {
 	n := len(cli.l) - 1
 
 	P := make([]float64, n)
-	P[id] = 1
-	epsilon := 0.0004
+
+	if len(id) > 0 {
+		P[id[0]] = 1
+	} else {
+		for i, _ := range P {
+			P[i] = float64(1) / float64(4)
+		}
+	}
+
+	epsilon := 0.0001
 	var delta float64
 	delta = 1
-	for delta > epsilon {
-		PK := cli.transposer(P)
 
-		//	fmt.Println(len(P))
-		//	fmt.Println(len(PK))
-		delta = math.Abs(sum(P, PK))
+	compt := 1
+
+	for delta > epsilon {
+		fmt.Printf("---TOUR %v\n---", compt)
+		PK := cli.transposer(P)
+		delta = sum(P, PK)
+		fmt.Printf("Delta = %v\n\n", delta)
+
 		//	fmt.Printf("delta: %v\n", delta)
 		//	fmt.Printf("Probality of P: %v\n", P)
 		//	fmt.Printf("Probality of PK: %v\n", PK)
 		P = PK
+		fmt.Printf("Probability of vector P(%v) is %v\n\n", id, P)
+		compt++
 	}
-	fmt.Printf("Probability of vector P(%v) is %v\n", id, P)
 }
 
 func sum(a, b []float64) float64 {
 	delta := 0.0
 	for i, _ := range b {
-		delta += b[i] - a[i]
+		delta += math.Abs(b[i] - a[i])
 	}
 	return delta
+}
+
+type convert func(float64, float64) float64
+
+type Randomize struct {
+	function convert
+	factor   float64
+}
+
+func ZapFactor(zi float64, d float64) float64 {
+	return d/float64(4) + (float64(1)-d)*zi
 }
