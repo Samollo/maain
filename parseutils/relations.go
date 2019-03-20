@@ -1,5 +1,7 @@
 package parseutils
 
+import "sort"
+
 type WordsPagesRelation struct {
 	words     []string
 	pages     []string

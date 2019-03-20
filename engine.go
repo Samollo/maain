@@ -3,7 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/Samollo/maain/parseutils"
+	"github.com/Samollo/maain/constants"
+	"github.com/Samollo/maain/crawler"
 )
 
 func main() {
@@ -13,7 +14,7 @@ func main() {
 		c.Prepare()
 		c.CLI.PageRank()
 	*/
-	cli := parseutils.NewCLI()
+	cli := crawler.NewCLI(constants.DumpFactor, true)
 	cli.AddPage([]int{1, 3})
 	cli.AddPage([]int{3})
 	cli.AddPage([]int{4})
