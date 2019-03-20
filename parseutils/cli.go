@@ -50,7 +50,8 @@ func (cli *CLI) AddPage(links []int) error {
 	return nil
 }
 
-func (cli *CLI) transposer(v []float64, convert ...Randomize) []float64 {
+func (cli *CLI) transposer(v []float64, zap bool) ([]float64, float64) {
+	SumOfPR := 0.0
 	n := len(cli.l) - 1
 	result := make([]float64, n)
 
@@ -59,17 +60,18 @@ func (cli *CLI) transposer(v []float64, convert ...Randomize) []float64 {
 
 			result[cli.i[j]] += cli.c[j] * v[i]
 
-			if convert != nil && j == cli.l[i+1]-1 {
-				random := convert[0]
-				result[cli.i[j]] = random.function(result[cli.i[j]], random.factor)
+			if zap && j == cli.l[i+1]-1 {
+				result[cli.i[j]] *= constants.DumpFactor
+				SumOfPR += result[cli.i[j]]
 			}
 		}
 	}
 
-	return result
+	return result, SumOfPR
 }
 
 func (cli *CLI) PageRank(id ...int) {
+	fmt.Println("PageRank..")
 	n := len(cli.l) - 1
 
 	P := make([]float64, n)
@@ -89,26 +91,25 @@ func (cli *CLI) PageRank(id ...int) {
 	compt := 1
 
 	for delta > epsilon {
-		fmt.Printf("---TOUR %v\n---", compt)
-		PK := cli.transposer(P)
-		delta = sum(P, PK)
-		fmt.Printf("Delta = %v\n\n", delta)
-
-		//	fmt.Printf("delta: %v\n", delta)
-		//	fmt.Printf("Probality of P: %v\n", P)
-		//	fmt.Printf("Probality of PK: %v\n", PK)
+		PK, SumOfPR := cli.transposer(P, true)
+		delta = sum(P, PK, SumOfPR)
 		P = PK
-		fmt.Printf("Probability of vector P(%v) is %v\n\n", id, P)
 		compt++
 	}
+
+	fmt.Printf("---%v tours---\n", compt)
+	fmt.Printf("Probability of vector P is %v\n\n", P)
+
 }
 
-func sum(a, b []float64) float64 {
+func sum(a, b []float64, SumOfPR float64) float64 {
 	delta := 0.0
-	for i, _ := range b {
-		delta += math.Abs(b[i] - a[i])
+	for i := range b {
+		b[i] = b[i]*(1-constants.D) + constants.D/constants.PagesToExtract
+		delta += b[i] - a[i]
+
 	}
-	return delta
+	return math.Abs(delta)
 }
 
 type convert func(float64, float64) float64
@@ -119,5 +120,5 @@ type Randomize struct {
 }
 
 func ZapFactor(zi float64, d float64) float64 {
-	return d/float64(4) + (float64(1)-d)*zi
+	return d/float64(constants.PagesToExtract) + (float64(1)-d)*zi
 }

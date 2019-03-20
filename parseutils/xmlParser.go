@@ -68,7 +68,7 @@ func GenerateDataset(input string, categories []string) ([]string, []string, err
 		}
 	}
 	fmt.Printf("%v pages extracted on a total of %v\n", pageProcessed, total)
-	fmt.Println(len(wordFreq))
+	//fmt.Println(len(wordFreq))
 
 	return sortWords(wordFreq), titles, nil
 }
