@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    {{with $1:=.PageTitle}}
+    <title>{{$1}} - Distrib</title>
+    {{end}}
+</head>
+
+<body style="text-align: center; background-color: #E8E8E8">
+    <div style="display:flex; border-bottom:1px solid #3399ff; padding-bottom: 50px">
+        <div style="margin:auto; margin-right: 10px">
+            <h2 style="text-shadow: 1px 1px #A9A9A9; color: #3399ff; font-family: Arial, Helvetica, sans-serif;">Distrib</h2>
+        </div>
+        <div style="margin:auto; margin-left: 10px">
+            {{with $1:=.PageTitle}}
+
+            <form action="/results" method="post">
+                <input style="font-size:14px; border-radius: 4px;" type="text" name=valueEntered required minlength="4" size="70"
+                    placeholder="{{$1}}">
+                <button style="font-size:14px; color: #181818; padding-bottom:1px; padding-top:2px; background-color: #ff8000; border-radius: 4px;" type="submit">Search</button>
+            </form>
+            {{end}}
+
+        </div>
+    </div>
+    <div style="margin: auto; margin-top: 20px; margin-left: 50px; margin-right: 50px; text-align: left">
+        {{with $2:=.V}}
+        {{range $2}}
+        <div style="height: 30px">
+            <a style="font-family: Arial, Helvetica, sans-serif; font-size: 15px" href="https://fr.wikipedia.org/wiki/{{.Value}}">Title : {{.Value}}</a><br />
+        </div>
+        {{end}}
+    </div>
+    {{end}}
+</body>
+
+</html>

@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strings"
 
 	rq "github.com/Samollo/maain/request"
 )
@@ -15,26 +16,21 @@ type PageVariables struct {
 }
 
 var RequestServ = rq.InitializeRequest("wordpages")
+var title = "Distrib"
 
 func LaunchFront() {
 	http.HandleFunc("/", DisplayHomePage)
-	http.HandleFunc("/result", UserSelected)
+	http.HandleFunc("/results", UserSelected)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func DisplayHomePage(w http.ResponseWriter, r *http.Request) {
-	title := "Home"
-
-	pv := PageVariables{
-		PageTitle: title,
-	}
-
 	t, err := template.ParseFiles("front/select.html")
 	if err != nil {
 		log.Print("template parsing error: ", err)
 	}
 
-	err = t.Execute(w, pv)
+	err = t.Execute(w, nil)
 	if err != nil {
 		log.Print("template executing error: ", err)
 	}
@@ -45,26 +41,24 @@ type Variable struct {
 }
 
 func UserSelected(w http.ResponseWriter, r *http.Request) {
-	title := "Search"
 	r.ParseForm()
+	requestSentence := r.FormValue("valueEntered")
 
-	mail := r.FormValue("valueEntered")
-
-	k := RequestServ.ReturnFoundPages(mail)
+	results := RequestServ.ReturnFoundPages(requestSentence)
 	element := make([]Variable, 0)
 
-	for _, value := range k {
-		element = append(element, Variable{value})
+	for _, value := range results {
+		element = append(element, Variable{strings.Title(value)})
 	}
 
-	fmt.Printf("%v", k)
+	fmt.Printf("%v", results)
 
 	pv := PageVariables{
-		PageTitle: title,
+		PageTitle: requestSentence,
 		V:         element,
 	}
 
-	t, err := template.ParseFiles("front/select.html")
+	t, err := template.ParseFiles("front/search.html")
 	if err != nil {
 		log.Print("template parsing error: ", err)
 	}
@@ -73,10 +67,4 @@ func UserSelected(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Print("template executing error: ", err)
 	}
-	/*
-		fmt.Println(mail)
-
-		for _, p := range k {
-			fmt.Fprintf(w, "<a href=\"https://fr.wikipedia.org/wiki/"+p+"\">"+p+"</a><br/>")
-		} */
 }
