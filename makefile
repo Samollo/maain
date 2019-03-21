@@ -18,6 +18,9 @@ build:
 	$(GOBUILD) -o $(BINARY_NAME) -v
 test: 
 	$(GOTEST) -v ./...
+deploy:
+	docker build -t diderotsearch .
+	docker run -i -t diderotsearch:latest
 clean: 
 	$(GOCLEAN)
 	rm -f $(BINARY_NAME) $(OUTPUT_FILE)
