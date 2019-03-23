@@ -6,6 +6,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/Samollo/maain/parseutils"
@@ -63,6 +64,62 @@ func parseLine(line string) (string, []string) {
 	return word, strings.Split(value[1], ",")
 }
 
+func (r *Request) Intersection(sentence string) []string {
+	words, _ := parseutils.FormatWord(sentence)
+	bestResults := make(map[string]float64)
+	pagesFound := make([][]string, 0)
+	totalPagesFound := 0
+
+	//we get all the pages concerned by the request
+	for _, v := range words {
+		if value, ok := r.wordPageRelation[v]; ok {
+			pagesFound = append(pagesFound, value)
+			totalPagesFound += len(value)
+		}
+	}
+
+	//We iterate through the pages found and give them a score
+	//based on how many words do they have and their position in the pageranking
+	for _, pages := range pagesFound {
+		for rank, page := range pages {
+			if _, ok := bestResults[page]; ok {
+				bestResults[page] += 1 / float64(totalPagesFound)
+			} else {
+				bestResults[page] = (1 / float64(totalPagesFound)) + (float64(totalPagesFound)-float64(rank))/float64(totalPagesFound)
+			}
+		}
+	}
+
+	pagesScore := mapToSlice(bestResults)
+	return SortWords(pagesScore)
+}
+
+func SortWords(words []*parseutils.Word) []string {
+	sortedWords := make([]string, 0)
+
+	//Sorted from biggest freq to lowest
+	sort.SliceStable(words, func(i, j int) bool { return words[i].Frequence() > words[j].Frequence() })
+	//keep only 10k words
+	//if len(words) > constants.WordsToKeep {
+	//	words = words[:constants.WordsToKeep]
+	//} else {
+	//	fmt.Printf("not enough words.\n")
+	//}
+	for i := 0; i < len(words); i++ {
+		sortedWords = append(sortedWords, words[i].String())
+	}
+	return sortedWords
+}
+
+func mapToSlice(m map[string]float64) []*parseutils.Word {
+	pairs := make([]*parseutils.Word, len(m))
+	index := 0
+	for i, v := range m {
+		pairs[index] = parseutils.NewWord(i, int(v)*100)
+		index++
+	}
+	return pairs
+}
 func (r *Request) ReturnFoundPages(sentence string) []string {
 	words, _ := parseutils.FormatWord(sentence)
 	minLength := math.MaxInt64
