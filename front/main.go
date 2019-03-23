@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	rq "github.com/Samollo/maain/request"
+	"github.com/Samollo/maain/request"
 )
 
 type PageVariables struct {
@@ -15,7 +15,7 @@ type PageVariables struct {
 	V         []Variable
 }
 
-var RequestServ = rq.InitializeRequest("wordpages")
+var RequestServ request.Request
 var title = "Distrib"
 
 func LaunchFront() {
@@ -44,7 +44,7 @@ func UserSelected(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	requestSentence := r.FormValue("valueEntered")
 
-	results := RequestServ.ReturnFoundPages(requestSentence)
+	results := RequestServ.Intersection(requestSentence)
 	element := make([]Variable, 0)
 
 	for _, value := range results {

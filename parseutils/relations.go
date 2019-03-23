@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"unicode"
 
 	"github.com/Samollo/maain/constants"
 )
@@ -43,6 +44,15 @@ func NewWordPagesRelation(words []string, pagesL []int, pagesName ...string) *Wo
 	}
 }
 
+func isNumber(w string) bool {
+	for _, v := range []rune(w) {
+		if unicode.IsDigit(v) == false {
+			return false
+		}
+	}
+	return true
+}
+
 func (wpr *WordsPagesRelation) Update(PageRank []float64) {
 	for index, pages := range wpr.relations {
 		//pagesUpdated := make([]*Pair, 0)
@@ -51,6 +61,9 @@ func (wpr *WordsPagesRelation) Update(PageRank []float64) {
 				pr := PageRank[page.Id]
 				if strings.Contains(wpr.pages[page.Id], wpr.words[index]) {
 					pr *= constants.PageRankBoost
+				}
+				if isNumber(wpr.pages[page.Id]) {
+					pr /= constants.PageRankBoost
 				}
 				wpr.relations[index][i].Val = pr
 			} else {

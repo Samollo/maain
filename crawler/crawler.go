@@ -101,7 +101,7 @@ func (c *Crawler) cliRelation() error {
 
 func (c *Crawler) serialize() error {
 	fmt.Println("Serialize...")
-	f, err := os.Create("wordpages")
+	f, err := os.Create(constants.ResultFile)
 	if err != nil {
 		return err
 	}

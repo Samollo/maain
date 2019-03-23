@@ -39,7 +39,7 @@ func GenerateDataset(input string, categories []string) ([]string, []string, []i
 
 	decoder := xml.NewDecoder(xmlFile)
 	for {
-		if pageProcessed == constants.PagesToExtract {
+		if pageProcessed == constants.PagesToExtract && !constants.TakeAll {
 			break
 		}
 
@@ -58,8 +58,7 @@ func GenerateDataset(input string, categories []string) ([]string, []string, []i
 				total++
 				title, _ := Extract("title", decoder)
 				content, _ := Extract("text", decoder)
-				if contains(content, categories) {
-					title = strings.ToLower(title)
+				if constants.TakeAll || contains(content, categories) {
 					titles = append(titles, title)
 					size := 0
 					wordFreq, content, size = extractWords(title, content, wordFreq, wordIndex, stopWords)
@@ -72,7 +71,7 @@ func GenerateDataset(input string, categories []string) ([]string, []string, []i
 	}
 	fmt.Printf("%v pages extracted on a total of %v read.\n", pageProcessed, total)
 
-	return sortWords(wordFreq), titles, pagesLength, nil
+	return SortWords(wordFreq), titles, pagesLength, nil
 }
 
 func serialize(f *os.File, title string, content string) {
@@ -141,7 +140,7 @@ func extractWords(title, content string, wordFreq []*Word, wordIndex map[string]
 	return wordFreq, strings.Join(tmp, " "), size
 }
 
-func sortWords(words []*Word) []string {
+func SortWords(words []*Word) []string {
 	sortedWords := make([]string, 0)
 
 	//Sorted from biggest freq to lowest
@@ -248,7 +247,7 @@ func removeAccents(s string) (string, error) {
 
 func FormatWord(word string) ([]string, error) {
 	word, _ = removeAccents(strings.ToLower(word))
-	regex, err := regexp.Compile("[a-z]{4,}")
+	regex, err := regexp.Compile(constants.RegexWord)
 	if err != nil {
 		return nil, err
 	}

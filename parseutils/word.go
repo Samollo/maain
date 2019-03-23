@@ -10,10 +10,14 @@ type Word struct {
 	freq  int
 }
 
-func NewWord(value string) *Word {
+func NewWord(value string, i ...int) *Word {
+	v := 1
+	if len(i) > 0 {
+		v = i[0]
+	}
 	return &Word{
 		value: value,
-		freq:  1,
+		freq:  v,
 	}
 }
 
@@ -23,6 +27,10 @@ func (w *Word) Increment() {
 
 func (w *Word) Frequence() int {
 	return w.freq
+}
+
+func (w *Word) Set(f int) {
+	w.freq = f
 }
 
 func (w *Word) String() string {
